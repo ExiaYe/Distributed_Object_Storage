@@ -22,15 +22,26 @@ func (t *tempInfo) id() int {
 	return id
 }
 
+// 函数commitTempObject用于将临时对象提交到存储系统中
 func commitTempObject(datFile string, tempinfo *tempInfo) {
+	// 打开datFile文件
 	f, _ := os.Open(datFile)
+	// 关闭文件
 	defer f.Close()
+	// 计算文件的哈希值
 	d := url.PathEscape(utils.CalculateHash(f))
+	// 将文件指针移动到文件开头
 	f.Seek(0, io.SeekStart)
+	// 创建存储对象文件
 	w, _ := os.Create(os.Getenv("STORAGE_ROOT") + "/objects/" + tempinfo.Name + "." + d)
+	// 创建gzip压缩器
 	w2 := gzip.NewWriter(w)
+	// 将datFile文件内容复制到存储对象文件中
 	io.Copy(w2, f)
+	// 关闭gzip压缩器
 	w2.Close()
+	// 删除datFile文件
 	os.Remove(datFile)
+	// 将对象哈希值和对象ID添加到locate中
 	locate.Add(tempinfo.hash(), tempinfo.id())
 }
