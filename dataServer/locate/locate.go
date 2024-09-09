@@ -63,18 +63,27 @@ func StartLocate() {
 	}
 }
 
+// CollectObjects函数用于收集存储根目录下的所有对象
 func CollectObjects() {
+	// 获取存储根目录下的所有对象文件
 	files, _ := filepath.Glob(os.Getenv("STORAGE_ROOT") + "/objects/*")
+	// 遍历所有对象文件
 	for i := range files {
+		// 获取文件名
 		file := strings.Split(filepath.Base(files[i]), ".")
+		// 如果文件名不符合要求，则抛出异常
 		if len(file) != 3 {
 			panic(files[i])
 		}
+		// 获取文件名中的hash值
 		hash := file[0]
+		// 将文件名中的id值转换为整数
 		id, e := strconv.Atoi(file[1])
+		// 如果转换失败，则抛出异常
 		if e != nil {
 			panic(e)
 		}
+		// 将hash值和id值存入objects字典中
 		objects[hash] = id
 	}
 }
