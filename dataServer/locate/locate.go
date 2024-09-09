@@ -36,17 +36,27 @@ func Del(hash string) {
 	mutex.Unlock()
 }
 
+// StartLocate函数用于启动定位服务
 func StartLocate() {
+	// 创建一个新的rabbitmq实例
 	q := rabbitmq.New(os.Getenv("RABBITMQ_SERVER"))
+	// 程序结束时关闭rabbitmq实例
 	defer q.Close()
+	// 绑定到名为"dataServers"的队列
 	q.Bind("dataServers")
+	// 消费队列中的消息
 	c := q.Consume()
+	// 遍历消费到的消息
 	for msg := range c {
+		// 将消息体转换为字符串
 		hash, e := strconv.Unquote(string(msg.Body))
+		// 如果转换失败，则抛出异常
 		if e != nil {
 			panic(e)
 		}
+		// 调用Locate函数，根据hash值定位数据
 		id := Locate(hash)
+		// 如果定位成功，则发送定位消息
 		if id != -1 {
 			q.Send(msg.ReplyTo, types.LocateMessage{Addr: os.Getenv("LISTEN_ADDRESS"), Id: id})
 		}
